@@ -1,7 +1,8 @@
 # doc2ocr
 *A flask application that converts documents to a searchable PDF file*
+
 TODO:
 - [x] Convert and serve one file.
-- [] Allow users to upload multiple files.
-- [] File conversion status.
-- [] Create a front-end.
+- [ ] Allow users to upload multiple files.
+- [ ] File conversion status.
+- [ ] Create a front-end.
