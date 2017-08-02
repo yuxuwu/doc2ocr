@@ -77,7 +77,6 @@ def convert():
         for image in request.files.getlist('file'):
             #Determine if file is suitable (image file type)
             if is_allowed(image.filename):
-
                 #Define local name variables for file names
                 filename = secure_filename(image.filename)
                 input_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)

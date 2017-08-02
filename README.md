@@ -1,4 +1,6 @@
 # doc2ocr
+**Please visit the organize_files branch for the latest version**
+
 *A flask application that converts documents to a searchable PDF file*
 
 TODO:
