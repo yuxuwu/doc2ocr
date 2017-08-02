@@ -3,7 +3,8 @@
 
 TODO:
 - [x] Convert and serve one file.
-- [ ] Allow users to upload multiple files.
+- [x] Allow users to upload multiple files.
+- [ ] Sort files using keywords.
 - [ ] File conversion status.
 - [ ] Create a front-end.
 
