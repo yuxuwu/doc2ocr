@@ -1,4 +1,5 @@
 import os
+import glob
 import subprocess
 import zipfile
 from flask import render_template, request, send_file
@@ -37,13 +38,12 @@ def process(temp_file, output_file):
     proc.wait()
     
 
-
 '''
 Zips a list of files into a 'batch.zip' file.
 '''
 def zip_files(file_list):
-    zipf = zipfile.Zipfile('batch.zip', 'w')
-    for f in file_list:
+    zipf = zipfile.ZipFile(app.config['ZIP_DOWNLOAD']+'batch.zip', 'w')
+    for f in glob.glob(file_list+'*'):
         zipf.write(f)
     zipf.close()
     return zipf
@@ -53,9 +53,13 @@ def zip_files(file_list):
 Deletes all files in TEMP, INPUT, and OUPUT directories
 '''
 def cleanup():
-    os.remove(app.config['UPLOAD_FOLDER']+'/*')
-    os.remove(app.config['TEMP_FOLDER']+'/*')
-    os.remove(app.config['PROCESSED_FOLDER']+'/*')
+    print(app.config['UPLOAD_FOLDER'])
+    for file in glob.glob(app.config['UPLOAD_FOLDER']+'*'):
+        os.remove(file)
+    for file in glob.glob(app.config['TEMP_FOLDER']+'*'):
+        os.remove(file)
+    for file in glob.glob(app.config['PROCESSED_FOLDER']+'*'):
+        os.remove(file)
 
 
 ########################################################################################################
@@ -103,12 +107,14 @@ def convert():
                 process(temp_file, output_file)
                 print("Debug: Output_file: " + output_file+".pdf")
 
-                #Clean up created files
-                print("Debug: Cleaning up")
-                cleanup()
+        zipf = zip_files(app.config['PROCESSED_FOLDER'])
 
-                try:
-                    return send_file("../"+output_file+".pdf", attachment_filename=output_file.rsplit('/')[-1])
+        #Clean up created files
+        print("Debug: Cleaning up")
+        cleanup()
 
-                except Exception as err:
-                    return str(err)
+        try:
+            return send_file('../'+app.config['ZIP_DOWNLOAD']+'batch.zip', attachment_filename=output_file.rsplit('/')[-1])
+
+        except Exception as err:
+            return str(err)
