@@ -77,40 +77,29 @@ def convert():
         for image in request.files.getlist('file'):
             #Determine if file is suitable (image file type)
             if is_allowed(image.filename):
+
                 #Define local name variables for file names
-                #req_images = []
                 filename = secure_filename(image.filename)
                 input_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 temp_file = output_file = os.path.join(app.config['TEMP_FOLDER'], filename.rsplit('.')[0]+".png")
                 output_file = os.path.join(app.config['PROCESSED_FOLDER'], filename.rsplit('.')[0]+"-ocr")
 
-                print("Debug: Input_file: " + input_file)
-                print("Debug: Temp_file: " + temp_file)
-                print("Debug: Output_file: " + output_file)
-
                 #Saves original image file to a temporary folder
                 image.save(input_file)
 
                 #Converts original image to PNG and saves it to a temporary folder to be OCRed
-                #TODO: image is closed??
-                #something = convert_to_png(input_file)
-                #save(filename=temp_file)
                 with Image(filename=input_file, resolution=300) as image_png:
                     for img in image_png.sequence:
                         img_page = Image(image=img)
-                        #req_images.append(img_page.make_blob('png'))
 
                         image_png.save(filename=temp_file)
 
                 #Process input to output
-                print("Debug: Processing " + image.filename)
                 process(temp_file, output_file)
-                print("Debug: Output_file: " + output_file+".pdf")
 
         zipf = zip_files(app.config['PROCESSED_FOLDER'])
 
         #Clean up created files
-        print("Debug: Cleaning up")
         cleanup()
 
         try:
