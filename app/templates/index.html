@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
     <p>
-        Please upload a file to be converted: <br>
+        Please select files to be converted: <br>
+        <i><b>Note: files will not be stored after the upload!</b></i><br>
         <form action = "http://localhost:5000/convert" method = "POST"
             enctype ="multipart/form-data">
-            <input type = "file" name = "file" />
-            <input type = "submit" />
+            <input type = "file" name = "file" multiple/><br>
+            <input type = "submit" value="Upload" />
         </form>
     </p>
 {% endblock %}
