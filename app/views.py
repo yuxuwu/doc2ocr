@@ -1,12 +1,13 @@
+from app import app
 import os
 import glob
 import subprocess
 import zipfile
 from flask import render_template, request, send_file
 from werkzeug import secure_filename
-from app import app
 from wand.image import Image
-from PIL import Image as PI
+from PIL import Image as IM
+import pytesseract as pyte
 
 '''
 Defines suitable file formats
@@ -18,25 +19,33 @@ def is_allowed(filename):
 
 '''
 Converts image to PNG if not already PNG
+void return type: Files are saved to temp_file
 '''
-def convert_to_png(image_path):
+def convert_to_png(image_path, temp_image_path):
     png_images = []
     with Image(filename=image_path, resolution=300) as image_png:
         for img in image_png.sequence:
             img_page = Image(image=img)
-            png_images.append(img_page.make_blob('png'))
+            image_png.save(filename=temp_image_path)
 
-    return image_png
+
+'''
+Converts PNG to a string(unicode)
+'''
+def convert_to_string(png_image):
+    print(type(png_image))
+    image = IM.open(png_image)
+    return pyte.image_to_string(image.convert('RGB'))
 
 
 '''
 Processes all flies in INPUT_FOLDER through Tesseract to PROCEESSED_FOLDER
-'''
 def process(temp_file, output_file):
     command = ['tesseract', temp_file, output_file, '-l', 'eng', 'pdf']
     proc = subprocess.Popen(command, stderr=subprocess.PIPE)
     proc.wait()
-    
+'''
+
 
 '''
 Zips a list of files into a 'batch.zip' file.
@@ -61,6 +70,8 @@ def cleanup():
     for file in glob.glob(app.config['PROCESSED_FOLDER']+'*'):
         os.remove(file)
 
+test_folder_config = {"PART": "Page","TESTS": "Last"}
+
 
 ########################################################################################################
 
@@ -82,20 +93,17 @@ def convert():
                 filename = secure_filename(image.filename)
                 input_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 temp_file = output_file = os.path.join(app.config['TEMP_FOLDER'], filename.rsplit('.')[0]+".png")
-                output_file = os.path.join(app.config['PROCESSED_FOLDER'], filename.rsplit('.')[0]+"-ocr")
+                output_file = os.path.join(app.config['PROCESSED_FOLDER'], filename.rsplit('.')[0])
 
                 #Saves original image file to a temporary folder
                 image.save(input_file)
 
-                #Converts original image to PNG and saves it to a temporary folder to be OCRed
-                with Image(filename=input_file, resolution=300) as image_png:
-                    for img in image_png.sequence:
-                        img_page = Image(image=img)
+                #Converts original image to PNG, then to string
+                convert_to_png(input_file, temp_file)
+                image_string = convert_to_string(temp_file)
+                print(image_string)
+                input()
 
-                        image_png.save(filename=temp_file)
-
-                #Process input to output
-                process(temp_file, output_file)
 
         zipf = zip_files(app.config['PROCESSED_FOLDER'])
 

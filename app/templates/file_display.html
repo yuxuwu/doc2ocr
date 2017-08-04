@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <h1>Upload Successful!</h1>
+    Here are the files you just submitted,
+    displayed in a text format:
+
+    {% for file in files %}
+        <h2>{{ File }}</h2>
+        <!--- TODO: embed python to display text content here -->
+        <br>
+    {% endfor %}

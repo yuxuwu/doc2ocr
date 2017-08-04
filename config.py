@@ -1,3 +1,4 @@
+ROOT_FOLDER = "tmp/"
 UPLOAD_FOLDER = 'tmp/uploads/'
 TEMP_FOLDER = 'tmp/temp_png/'
 PROCESSED_FOLDER = 'tmp/processed/'
