@@ -1,5 +1,6 @@
 from app import app
 import os
+import shutil
 import glob
 import subprocess
 import zipfile
@@ -33,27 +34,35 @@ def convert_to_png(image_path, temp_image_path):
 Converts PNG to a string(unicode)
 '''
 def convert_to_string(png_image):
-    print(type(png_image))
     image = IM.open(png_image)
     return pyte.image_to_string(image.convert('RGB'))
 
 
 '''
-Processes all flies in INPUT_FOLDER through Tesseract to PROCEESSED_FOLDER
-def process(temp_file, output_file):
-    command = ['tesseract', temp_file, output_file, '-l', 'eng', 'pdf']
-    proc = subprocess.Popen(command, stderr=subprocess.PIPE)
-    proc.wait()
+Moves file to a specified folder. Creates folder if folder is not present
+Parameters: input_file - file to be moved
+            dest_folder - directory file is moved to 
 '''
+def send_to_processed(input_file, dest_folder):
+    if not os.path.isdir(dest_folder):
+        os.mkdir(dest_folder)
+        shutil.move(input_file, dest_folder)
 
 
 '''
 Zips a list of files into a 'batch.zip' file.
+Parameters: file_list - root directory of files to be zipped
+Return: a ZipFile object, stored in app.config['ZIP_DOWNLOAD']
+TODO: name zipfile by UUID
 '''
 def zip_files(file_list):
     zipf = zipfile.ZipFile(app.config['ZIP_DOWNLOAD']+'batch.zip', 'w')
-    for f in glob.glob(file_list+'*'):
-        zipf.write(f)
+    for dirpath, dirs, files in os.walk(file_list, False):
+        for folder_name in dirs:
+            for file in os.listdir(os.path.join(dirpath, folder_name)):
+                file_path = os.path.join(dirpath, folder_name, file)
+                file_name = os.path.join(folder_name, file)
+                zipf.write(file_path, arcname=file_name)
     zipf.close()
     return zipf
 
@@ -62,15 +71,17 @@ def zip_files(file_list):
 Deletes all files in TEMP, INPUT, and OUPUT directories
 '''
 def cleanup():
-    print(app.config['UPLOAD_FOLDER'])
     for file in glob.glob(app.config['UPLOAD_FOLDER']+'*'):
         os.remove(file)
     for file in glob.glob(app.config['TEMP_FOLDER']+'*'):
         os.remove(file)
     for file in glob.glob(app.config['PROCESSED_FOLDER']+'*'):
-        os.remove(file)
+        #remove file tree 
+        shutil.rmtree(file)
+    #for file in glob.glob(app.config['ZIP_DOWNLOAD']+'*'):
+    #    os.remove(file)
 
-test_folder_config = {"PART": "Page","TESTS": "Last"}
+test_folder_config = {u"COMPLIANT": "Page",u"TESTS": "Last"}
 
 
 ########################################################################################################
@@ -100,18 +111,30 @@ def convert():
 
                 #Converts original image to PNG, then to string
                 convert_to_png(input_file, temp_file)
-                image_string = convert_to_string(temp_file)
-                print(image_string)
-                input()
-
+                image_string = convert_to_string(temp_file).upper()
+                to_be_defaulted = True
+                #temp_string_list = image_string.rsplit(' ')
+                for key in test_folder_config.keys():
+                    print(key)
+                    if key in image_string:
+                        to_be_defaulted = False
+                        dest_folder = app.config['PROCESSED_FOLDER']+test_folder_config[key]
+                        send_to_processed(input_file, dest_folder)
+                        break
+                
+                if to_be_defaulted:
+                    send_to_processed(input_file, app.config['DEFAULT_FOLDER'])                    
 
         zipf = zip_files(app.config['PROCESSED_FOLDER'])
 
         #Clean up created files
-        cleanup()
+        #cleanup()
 
         try:
-            return send_file('../'+app.config['ZIP_DOWNLOAD']+'batch.zip', attachment_filename=output_file.rsplit('/')[-1])
+            zip_path = '../'+app.config['ZIP_DOWNLOAD']+'batch.zip'
+            return send_file(zip_path, 
+                             mimetype='application/zip',
+                             as_attachment=True)
 
         except Exception as err:
             return str(err)
