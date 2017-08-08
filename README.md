@@ -4,15 +4,12 @@
 TODO:
 - [x] Convert and serve one file.
 - [x] Allow users to upload multiple files.
-- [ ] Sort files using keywords.
+- [x] Sort files using keywords.
 - [ ] File conversion status.
 - [ ] Create a front-end.
 
-TODO:
-Remove pdf file functionality and return text of each file
-Render template passing in data of each file 
-    ex. render_template("files.html", files=files)
-Find a way to interpret .yaml files
+ISSUES:
+- [ ] Defaulted files not being sent to manual sorting directory
 
 Pipeline:
 1. Take in a batch of files
