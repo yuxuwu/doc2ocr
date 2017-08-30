@@ -61,6 +61,8 @@ def move_file(input_file, dest_folder):
 Moves file to a specified folder. Creates folder if folder is not present
 Parameters: input_file - file to be moved
             image_string - string contents of the file
+Return type: returns true if file was moved to its specified folder
+             returns false if a suitable folder was not found
 '''
 def send_to_processed(input_file, image_string, folder_config):
     for folder in folder_config['folders'].keys():
